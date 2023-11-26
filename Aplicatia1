@@ -1,0 +1,249 @@
+install.packages("moments")
+install.packages("tseries")
+install.packages("knitr")
+install.packages("openxlsx")
+install.packages("ggplot2")
+install.packages("tidyverse")
+install.packages("glmnet")
+library(glmnet)
+library(moments)
+library(tseries)
+library(knitr)
+library(openxlsx)
+library(ggplot2)
+library(tidyverse)
+
+directory <- "C:/Users/Anais/OneDrive/Desktop/Proiect Econometrie/"
+
+RataInflatie <- read.csv(paste0(directory, "IR 2021.csv"))
+str(RataInflatie)
+
+RataSomaj <- read.csv(paste0(directory, "UR 2021.csv"))
+str(RataSomaj)
+
+CheltuieliGuv <- read.csv(paste0(directory, "GS 2021.csv"))
+str(CheltuieliGuv)
+
+BeneficiiSC0 <- read.csv(paste0(directory, "S0C 2021.csv"))
+str(BeneficiiSC0)
+
+BeneficiiSC2 <- read.csv(paste0(directory, "S2C 2021.csv"))
+str(BeneficiiSC2)
+
+summary_data_RataInflatie <- data.frame(
+  Statistic = c("Minimum", "1st Quartile", "Median", "Mean", "3rd Quartile", "Maximum", "Standard Deviation", "Skewness", "Kurtosis", "Jarque-Bera Test", "Probability", "Sum", "Sum of Squared Deviations", "Number of Observations"),
+  Value = c(
+    summary(RataInflatie$CPI)[1],
+    summary(RataInflatie$CPI)[2],
+    summary(RataInflatie$CPI)[3],
+    mean(RataInflatie$CPI),
+    summary(RataInflatie$CPI)[5],
+    max(RataInflatie$CPI),
+    sd(RataInflatie$CPI),
+    moments::skewness(RataInflatie$CPI),
+    moments::kurtosis(RataInflatie$CPI),
+    jarque.bera.test(RataInflatie$CPI)$statistic,
+    pnorm(0, mean = mean(RataInflatie$CPI), sd = sd(RataInflatie$Rata.Inflatie)),
+    sum(RataInflatie$CPI),
+    sum((RataInflatie$CPI - mean(RataInflatie$CPI))^2),
+    length(RataInflatie$CPI)
+  )
+)
+
+table_RataInflatie <- kable(summary_data_RataInflatie, format = "html", col.names = c("Statistic-Rata Inflatie", "Value"))
+
+ggplot(RataInflatie, aes(x = Country, y = CPI)) +
+  geom_bar(stat = "identity", fill = "blue") +
+  labs(title = "Rata Inflatiei pe Tari", x = "Tara", y = "Rata Inflatiei 2021") +
+  theme_minimal()
+
+summary_data_RataSomaj <- data.frame(
+  Statistic = c("Minimum", "1st Quartile", "Median", "Mean", "3rd Quartile", "Maximum", "Standard Deviation", "Skewness", "Kurtosis", "Jarque-Bera Test", "Probability", "Sum", "Sum of Squared Deviations", "Number of Observations"),
+  Value = c(
+    summary(RataSomaj$HUR)[1],
+    summary(RataSomaj$HUR)[2],
+    summary(RataSomaj$HUR)[3],
+    mean(RataSomaj$HUR),
+    summary(RataSomaj$HUR)[5],
+    max(RataSomaj$HUR),
+    sd(RataSomaj$HUR),
+    moments::skewness(RataSomaj$HUR),
+    moments::kurtosis(RataSomaj$HUR),
+    jarque.bera.test(RataSomaj$HUR)$statistic,
+    pnorm(0, mean = mean(RataSomaj$HUR), sd = sd(RataSomaj$HUR)),
+    sum(RataSomaj$HUR),
+    sum((RataSomaj$HUR - mean(RataSomaj$HUR))^2),
+    length(RataSomaj$HUR)
+  )
+)
+
+table_RataSomaj <- kable(summary_data_RataSomaj, format = "html", col.names = c("Statistic-Rata Somaj", "Value"))
+
+ggplot(RataSomaj, aes(x = Country, y = HUR)) +
+  geom_bar(stat = "identity", fill = "blue") +
+  labs(title = "Rata Somajului pe Tari", x = "Tara", y = "Rata Somajului 2021") +
+  theme_minimal()
+
+summary_data_CheltuieliGuv <- data.frame(
+  Statistic = c("Minimum", "1st Quartile", "Median", "Mean", "3rd Quartile", "Maximum", "Standard Deviation", "Skewness", "Kurtosis", "Jarque-Bera Test", "Probability", "Sum", "Sum of Squared Deviations", "Number of Observations"),
+  Value = c(
+    summary(CheltuieliGuv$GGEXP)[1],
+    summary(CheltuieliGuv$GGEXP)[2],
+    summary(CheltuieliGuv$GGEXP)[3],
+    mean(CheltuieliGuv$GGEXP),
+    summary(CheltuieliGuv$GGEXP)[5],
+    max(CheltuieliGuv$GGEXP),
+    sd(CheltuieliGuv$GGEXP),
+    moments::skewness(CheltuieliGuv$GGEXP),
+    moments::kurtosis(CheltuieliGuv$GGEXP),
+    jarque.bera.test(CheltuieliGuv$GGEXP)$statistic,
+    pnorm(0, mean = mean(CheltuieliGuv$GGEXP), sd = sd(CheltuieliGuv$GGEXP)),
+    sum(CheltuieliGuv$GGEXP),
+    sum((CheltuieliGuv$GGEXP - mean(CheltuieliGuv$GGEXP))^2),
+    length(CheltuieliGuv$GGEXP)
+  )
+)
+
+table_CheltuieliGuv <- kable(summary_data_CheltuieliGuv, format = "html", col.names = c("Statistic-Cheltuieli Guvernamentale", "Value"))
+
+ggplot(CheltuieliGuv, aes(x = Country, y = GGEXP)) +
+  geom_bar(stat = "identity", fill = "blue") +
+  labs(title = "Cheltuieli Guvernamentale pe Tari", x = "Tara", y = "Cheltuieli Guvernamentale 2021") +
+  theme_minimal()
+
+summary_data_Beneficii0 <- data.frame(
+  Statistic = c("Minimum", "1st Quartile", "Median", "Mean", "3rd Quartile", "Maximum", "Standard Deviation", "Skewness", "Kurtosis", "Jarque-Bera Test", "Probability", "Sum", "Sum of Squared Deviations", "Number of Observations"),
+  Value = c(
+    summary(BeneficiiSC0$MININCBEN_SNGLNOCHLD)[1],
+    summary(BeneficiiSC0$MININCBEN_SNGLNOCHLD)[2],
+    summary(BeneficiiSC0$MININCBEN_SNGLNOCHLD)[3],
+    mean(BeneficiiSC0$MININCBEN_SNGLNOCHLD),
+    summary(BeneficiiSC0$MININCBEN_SNGLNOCHLD)[5],
+    max(BeneficiiSC0$MININCBEN_SNGLNOCHLD),
+    sd(BeneficiiSC0$MININCBEN_SNGLNOCHLD),
+    moments::skewness(BeneficiiSC0$MININCBEN_SNGLNOCHLD),
+    moments::kurtosis(BeneficiiSC0$MININCBEN_SNGLNOCHLD),
+    jarque.bera.test(BeneficiiSC0$MININCBEN_SNGLNOCHLD)$statistic,
+    pnorm(0, mean = mean(BeneficiiSC0$MININCBEN_SNGLNOCHLD), sd = sd(BeneficiiSC0$MININCBEN_SNGLNOCHLD)),
+    sum(BeneficiiSC0$MININCBEN_SNGLNOCHLD),
+    sum((BeneficiiSC0$MININCBEN_SNGLNOCHLD - mean(BeneficiiSC0$MININCBEN_SNGLNOCHLD))^2),
+    length(BeneficiiSC0$MININCBEN_SNGLNOCHLD)
+  )
+)
+
+table_Beneficii0 <- kable(summary_data_Beneficii0, format = "html", col.names = c("Statistic-Beneficii S0C", "Value"))
+
+ggplot(BeneficiiSC0, aes(x = Country, y = MININCBEN_SNGLNOCHLD)) +
+  geom_bar(stat = "identity", fill = "blue") +
+  labs(title = "Beneficii S0C pe Tari", x = "Tara", y = "Beneficii S0C 2021") +
+  theme_minimal()
+
+summary_data_Beneficii2 <- data.frame(
+  Statistic = c("Minimum", "1st Quartile", "Median", "Mean", "3rd Quartile", "Maximum", "Standard Deviation", "Skewness", "Kurtosis", "Jarque-Bera Test", "Probability", "Sum", "Sum of Squared Deviations", "Number of Observations"),
+  Value = c(
+    summary(BeneficiiSC2$MININCBEN_SNGL2CHLD)[1],
+    summary(BeneficiiSC2$MININCBEN_SNGL2CHLD)[2],
+    summary(BeneficiiSC2$MININCBEN_SNGL2CHLD)[3],
+    mean(BeneficiiSC2$MININCBEN_SNGL2CHLD),
+    summary(BeneficiiSC2$MININCBEN_SNGL2CHLD)[5],
+    max(BeneficiiSC2$MININCBEN_SNGL2CHLD),
+    sd(BeneficiiSC2$MININCBEN_SNGL2CHLD),
+    moments::skewness(BeneficiiSC2$MININCBEN_SNGL2CHLD),
+    moments::kurtosis(BeneficiiSC2$MININCBEN_SNGL2CHLD),
+    jarque.bera.test(BeneficiiSC2$MININCBEN_SNGL2CHLD)$statistic,
+    pnorm(0, mean = mean(BeneficiiSC2$MININCBEN_SNGL2CHLD), sd = sd(BeneficiiSC2$MININCBEN_SNGL2CHLD)),
+    sum(BeneficiiSC2$MININCBEN_SNGL2CHLD),
+    sum((BeneficiiSC2$MININCBEN_SNGL2CHLD - mean(BeneficiiSC2$MININCBEN_SNGL2CHLD))^2),
+    length(BeneficiiSC2$MININCBEN_SNGL2CHLD)
+  )
+)
+
+table_Beneficii2 <- kable(summary_data_Beneficii2, format = "html", col.names = c("Statistic-Beneficii S2C", "Value"))
+
+ggplot(BeneficiiSC2, aes(x = Country, y = MININCBEN_SNGL2CHLD)) +
+  geom_bar(stat = "identity", fill = "blue") +
+  labs(title = "Beneficii S2C pe Tari", x = "Tara", y = "Beneficii S0C 2021") +
+  theme_minimal()
+
+#Model regresie unifactorial (Rata Inflatie - Rata Somaj):
+
+merged_data <- merge(RataInflatie, RataSomaj, by = "Country")
+#Scatter plot
+plot(merged_data$CPI, merged_data$HUR, main = "Scatter Plot", xlab = "Rata Inflatiei", ylab = "Rata Somajului")
+#Matrice corelatie
+cor(merged_data[, c("CPI", "HUR")])
+#Matrice covarianta
+cov(merged_data[, c("CPI", "HUR")])
+
+#Model regresie multifactorial (Rata Inflatie - Rata Somaj & Cheltuieli Guvernamentale & Beneficii Singur 0 Copii & Beneficii Singur 2 Copii):
+
+merged_data <- merge(merged_data, CheltuieliGuv, by = "Country")
+merged_data <- merge(merged_data, BeneficiiSC0, by = "Country")
+merged_data <- merge(merged_data, BeneficiiSC2, by = "Country")
+
+model <- lm(CPI ~ HUR + GGEXP + MININCBEN_SNGLNOCHLD + MININCBEN_SNGL2CHLD, data = merged_data)
+#Rezultate model
+summary(model)
+#Test Shapiro (Verificare normalitate model)
+shapiro_test_result <- shapiro.test(resid(model))
+p_value_shapiro <- shapiro_test_result$p.value
+print(p_value_shapiro)
+# Diagnostic plots
+par(mfrow = c(2, 2))
+plot(model)
+# Model fit metrics
+cat("R-squared:", summary(model)$r.squared, "\n")
+cat("Adjusted R-squared:", summary(model)$adj.r.squared, "\n")
+# Coefficients
+coefficients(model)
+# Coefficient significance
+summary(model)$coefficients[, c("Estimate", "Pr(>|t|)")]
+# Scatter plot Reziduuri
+plot(merged_data$CPI, residuals(model), xlab = "Rata Inflatie", ylab = "Residuals", main = "Reziduuri vs. Rata Inflatie")
+lines(lowess(merged_data$CPI, residuals(model)), col = "red")
+
+#Introducere Variabila Dummy:
+merged_data$DummyNotE <- as.numeric(!grepl("E", merged_data$Country))
+
+model <- lm(CPI ~ HUR + GGEXP + MININCBEN_SNGLNOCHLD + MININCBEN_SNGL2CHLD + DummyNotE, data = merged_data)
+# Rezultate model
+summary(model)
+# Test Shapiro (Verificare normalitate model)
+shapiro_test_result <- shapiro.test(resid(model))
+p_value_shapiro <- shapiro_test_result$p.value
+print(p_value_shapiro)
+# Diagnostic plots
+par(mfrow = c(2, 2))
+plot(model)
+# Model fit metrics
+cat("R-squared:", summary(model)$r.squared, "\n")
+cat("Adjusted R-squared:", summary(model)$adj.r.squared, "\n")
+# Coefficients
+coefficients(model)
+# Coefficient significance
+summary(model)$coefficients[, c("Estimate", "Pr(>|t|)")]
+# Scatter plot
+plot(merged_data$CPI, residuals(model), xlab = "Rata Inflatie", ylab = "Residuals", main = "Reziduuri vs. Rata Inflatie")
+lines(lowess(merged_data$CPI, residuals(model)), col = "red")
+
+#Regularea datelor
+
+x <- model.matrix(CPI ~ HUR + GGEXP + MININCBEN_SNGLNOCHLD + MININCBEN_SNGL2CHLD + DummyNotE, data = merged_data)
+y <- merged_data$CPI
+
+# Fit Lasso
+lasso_model <- cv.glmnet(x, y, alpha = 1)  # alpha = 1 for Lasso
+lasso_coef <- coef(lasso_model, s = lasso_model$lambda.min)
+lasso_pred <- predict(lasso_model, newx = x, s = lasso_model$lambda.min)
+
+options(warn = -1)
+
+# Fit Ridge
+ridge_model <- cv.glmnet(x, y, alpha = 0)  # alpha = 0 for Ridge
+ridge_coef <- coef(ridge_model, s = ridge_model$lambda.min)
+ridge_pred <- predict(ridge_model, newx = x, s = ridge_model$lambda.min)
+
+# Fit Elastic Net
+elastic_net_model <- cv.glmnet(x, y, alpha = 0.5)  # alpha = 0.5 for Elastic Net (balanced between L1 and L2)
+elastic_net_coef <- coef(elastic_net_model, s = elastic_net_model$lambda.min)
+elastic_net_pred <- predict(elastic_net_model, newx = x, s = elastic_net_model$lambda.min)
