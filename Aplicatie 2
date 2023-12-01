@@ -1,0 +1,82 @@
+install.packages("moments")
+install.packages("tseries")
+install.packages("knitr")
+install.packages("openxlsx")
+install.packages("ggplot2")
+install.packages("tidyverse")
+install.packages("glmnet")
+install.packages("plm")
+install.packages("tidyr")
+install.packages("car")
+install.packages("lmtest")
+library(lmtest)
+library(car)
+library(moments)
+library(tseries)
+library(knitr)
+library(openxlsx)
+library(ggplot2)
+library(tidyverse)
+library(glmnet)
+library(plm)
+library(tidyr)
+
+directory <- "C:/Users/Anais/OneDrive/Desktop/Proiect Econometrie/"
+
+Panel <- read.csv(paste0(directory, "Panel.csv"))
+str(Panel)
+
+Panel$LOCATION <- as.factor(Panel$LOCATION)
+Panel$TIME <- as.factor(Panel$TIME)
+
+panel_data <- pdata.frame(Panel, index = c("LOCATION", "TIME"))
+
+#Verifica daca panelul este balanced
+is.pbalanced(panel_data)
+
+#FE si RE
+
+fe_model1 <- plm(CPI ~ HUR + GGEXP + MININCBEN_SNGLNOCHLD + MININCBEN_SNGL2CHLD, data = panel_data, model = "within")
+summary(fe_model1)
+
+fe_model2 <- plm(CPI ~ HUR + GGEXP, data = panel_data, model = "within")
+summary(fe_model2)
+
+re_model <- plm(CPI ~ HUR + GGEXP, data = panel_data, model = "random")
+summary(re_model)
+
+hausman_test1 <- phtest(fe_model1, re_model)
+print(hausman_test1)
+
+hausman_test2 <- phtest(fe_model2, re_model)
+print(hausman_test2)
+
+#Testare intre fe1 si fe2
+#Test multicoliniaritate
+calculate_vif <- function(model) {
+  x <- model$model[, -1]
+  vif_values <- sapply(1:ncol(x), function(i) {
+    vif_lm <- lm(x[, i] ~ ., data = x[, -i])
+    vif_value <- 1 / (1 - summary(vif_lm)$r.squared)
+    return(vif_value)
+  })
+  names(vif_values) <- colnames(x)
+  return(vif_values)
+}
+vif_values1 <- calculate_vif(fe_model1)
+vif_values2 <- calculate_vif(fe_model2)
+print(vif_values1)
+print(vif_values2)
+
+#Test autocorelatie
+plmtest(fe_model1, type = "bp")
+plmtest(fe_model2, type = "bp")
+
+#=> voi alege fe_model2 pentru testarea dintre fe si re
+fe_model2 <- plm(CPI ~ HUR + GGEXP, data = panel_data, model = "within")
+re_model <- plm(CPI ~ HUR + GGEXP, data = panel_data, model = "random")
+hausman_test2 <- phtest(fe_model2, re_model)
+print(hausman_test2)
+
+#=> prioritizand minimizarea lipsei de consistenta voi alege FE
+summary(fe_model2)
