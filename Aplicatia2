@@ -73,10 +73,24 @@ plmtest(fe_model1, type = "bp")
 plmtest(fe_model2, type = "bp")
 
 #=> voi alege fe_model2 pentru testarea dintre fe si re
-fe_model2 <- plm(CPI ~ HUR + GGEXP, data = panel_data, model = "within")
-re_model <- plm(CPI ~ HUR + GGEXP, data = panel_data, model = "random")
-hausman_test2 <- phtest(fe_model2, re_model)
-print(hausman_test2)
+fe_modelF <- plm(CPI ~ HUR + GGEXP, data = panel_data, model = "within")
+re_modelF <- plm(CPI ~ HUR + GGEXP, data = panel_data, model = "random")
+hausman_testF <- phtest(fe_modelF, re_modelF)
+print(hausman_testF)
 
 #=> prioritizand minimizarea lipsei de consistenta voi alege FE
 summary(fe_model2)
+
+
+#Noul model:
+
+#FE si RE
+
+fe_model <- plm(CPI ~ HUR, data = panel_data, model = "within")
+summary(fe_model)
+
+re_model <- plm(CPI ~ HUR, data = panel_data, model = "random")
+summary(re_model)
+
+hausman_test <- phtest(fe_model, re_model)
+print(hausman_test) #modelul RE este bun va fi respinsa => ipoteza nula conform careia  
