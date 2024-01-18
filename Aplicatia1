@@ -5,6 +5,14 @@ install.packages("openxlsx")
 install.packages("ggplot2")
 install.packages("tidyverse")
 install.packages("glmnet")
+install.packages("car")
+install.packages("lmtest")
+install.packages("gvlma")
+install.packages("caret")
+library(car)
+library(lmtest)
+library(gvlma)
+library(caret)
 library(glmnet)
 library(moments)
 library(tseries)
@@ -181,6 +189,8 @@ merged_data <- merge(merged_data, CheltuieliGuv, by = "Country")
 merged_data <- merge(merged_data, BeneficiiSC0, by = "Country")
 merged_data <- merge(merged_data, BeneficiiSC2, by = "Country")
 
+merged_data2 <- merge(RataInflatie, RataSomaj, by = "Country")
+
 model <- lm(CPI ~ HUR + GGEXP + MININCBEN_SNGLNOCHLD + MININCBEN_SNGL2CHLD, data = merged_data)
 #Rezultate model
 summary(model)
@@ -247,3 +257,103 @@ ridge_pred <- predict(ridge_model, newx = x, s = ridge_model$lambda.min)
 elastic_net_model <- cv.glmnet(x, y, alpha = 0.5)  # alpha = 0.5 for Elastic Net (balanced between L1 and L2)
 elastic_net_coef <- coef(elastic_net_model, s = elastic_net_model$lambda.min)
 elastic_net_pred <- predict(elastic_net_model, newx = x, s = elastic_net_model$lambda.min)
+
+
+#Noul model:
+
+#Crearea de predictii
+
+lm_updated <- lm(CPI ~ HUR, data = merged_data)
+summary(lm_updated4)
+
+# Create a new data frame for prediction
+new_data <- data.frame(
+  Country = c("SWE", "SVN", "SVK", "PRT", "POL", "NOR", "NLD", "LVA", "LUX", "LTU",
+              "ITA", "ISL", "IRL", "HUN", "GRC", "FRA", "FIN", "EST", "ESP", "DNK",
+              "DEU", "CZE", "CHE", "BEL", "AUT"),
+  CPI = c(2.1631970, 1.9170650, 3.1496060, 1.2656570, 5.1000000, 3.4838810, 2.6757200, 3.2758140, 2.5269200, 4.6835440,
+          1.8737830, 4.4442430, 2.3581430, 5.1109650, 1.2238260, 1.6423310, 2.1945740, 4.6531670, 3.0931350, 1.8530450,
+          3.0666670, 3.8398450, 0.5818142, 2.4402480, 2.7666670),
+  HUR = c(8.891666, 4.775000, 6.825000, 6.591667, 3.375000, 4.458333, 4.225000, 7.575000, 5.425000, 7.125000,
+          9.558333, 6.091667, 6.266667, 4.041667, 14.791670, 7.875000, 7.675000, 6.208333, 14.791670, 5.100000,
+          3.575000, 2.808333, 5.098192, 6.275000, 6.200000)
+)
+
+predictions <- predict(lm_updated, newdata = new_data)
+result <- cbind(new_data, Predicted_CPI = predictions)
+print(result)
+
+#Teste
+
+# Normality of Residuals
+# Shapiro-Wilk test
+shapiro_test_result <- shapiro.test(resid(lm_updated))
+p_value_shapiro <- shapiro_test_result$p.value
+print(p_value_shapiro)
+
+# P-values
+coef(summary(lm_updated))
+
+# F-statistic
+anova(lm_updated)
+
+# Correlation matrix
+predictors_of_interest <- merged_data2[, c("CPI", "HUR")]
+cor(predictors_of_interest)
+
+# Jarque-Bera test
+jarque.bera.test(lm_updated$residuals)
+
+# Independence of Residuals
+# Durbin-Watson statistic
+durbinWatsonTest(lm_updated)
+
+# Heteroscedasticity Tests
+# Breusch-Pagan test
+bptest(lm_updated)
+
+# Cross-validation
+set.seed(123)
+cv_results <- trainControl(method = "cv", number = 2)
+cv_model <- train(CPI ~ HUR, data = merged_data, method = "lm", trControl = cv_results)
+print(cv_results)
+print(cv_model)
+
+# Global Validation of Linear Models Assumptions (gvlma)
+gvlma(lm_updated)
+
+#Grafice
+
+par(mfrow = c(2, 2))
+plot(lm_updated)
+
+plot(merged_data$CPI, residuals(lm_updated), xlab = "Rata Inflatie", ylab = "Residuals", main = "Reziduuri vs. Rata Inflatie")
+lines(lowess(merged_data$CPI, residuals(lm_updated)), col = "red")
+
+#Regularea datelor
+
+xNOU <- model.matrix(CPI ~ HUR, data = merged_data)
+yNOU <- merged_data$CPI
+
+# Fit Lasso
+lasso_modelNOU <- cv.glmnet(xNOU, yNOU, alpha = 1)  # alpha = 1 for Lasso
+lasso_coefNOU <- coef(lasso_modelNOU, s = lasso_modelNOU$lambda.min)
+lasso_predNOU <- predict(lasso_modelNOU, newx = xNOU, s = lasso_modelNOU$lambda.min)
+print(lasso_coefNOU)
+print(lasso_predNOU)
+
+options(warn = -1)
+
+# Fit Ridge
+ridge_modelNOU <- cv.glmnet(xNOU, yNOU, alpha = 0)  # alpha = 0 for Ridge
+ridge_coefNOU <- coef(ridge_modelNOU, s = ridge_modelNOU$lambda.min)
+ridge_predNOU <- predict(ridge_modelNOU, newx = xNOU, s = ridge_modelNOU$lambda.min)
+print(ridge_coefNOU)
+print(ridge_predNOU)
+
+# Fit Elastic Net
+elastic_net_modelNOU <- cv.glmnet(xNOU, yNOU, alpha = 0.5)  # alpha = 0.5 for Elastic Net (balanced between L1 and L2)
+elastic_net_coefNOU <- coef(elastic_net_modelNOU, s = elastic_net_modelNOU$lambda.min)
+elastic_net_predNOU <- predict(elastic_net_modelNOU, newx = xNOU, s = elastic_net_modelNOU$lambda.min)
+print(elastic_net_coefNOU)
+print(elastic_net_predNOU)
